@@ -1,0 +1,108 @@
+import {
+    // Button,
+    Container,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TablePagination,
+    TableRow,
+    Paper,
+    TableHead,
+  } from '@mui/material'
+  
+  import { ViewusersLogic } from '../ViewUsers/ViewUser'
+  import { useStyles } from '../ViewUsers/viewUsers.style.js'
+  import { TablePaginationActions } from '../../components/TablePagination/TablePaginationActions.js'
+//   import Alerts from '../../components/Alerts/index.jsx'
+  import LoadingBar from '../../components/LoadingBar'
+import { useEffect, useState } from 'react'
+  
+  function SuperAdminDashboard() {
+    const [userLists, setUserLists] = useState([])
+    const {
+      loading,
+      data,
+    //   error,
+      handleChangeRowsPerPage,
+      handleChangePage,
+      page,
+      rowsPerPage,
+    //   userLists,
+    //   VerifyuserHandler,
+    //   markSuperAdminHandler
+    } = ViewusersLogic()
+    const classes = useStyles()
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const res = await fetch('http://localhost:5000/admin/management/users')
+            const data = await res.json()
+            setUserLists(data.data)
+        }
+        fetchUsers()
+    }, [])
+    console.log(userLists)
+
+    return (
+      <>
+        <Container maxWidth="xl"
+        style={{marginTop: '100px'}}
+        >
+          {/* {error && (
+            <Alerts
+              severity="error"
+              info="Something went Wrong !, Please Login Again"
+            />
+          )} */}
+          <h1>All Employees Details and their Wallet Address</h1>
+          <TableContainer component={Paper} className={classes.tableContainer} style={{
+            marginTop: '50px'
+          }}>
+            {loading && <LoadingBar />}
+            <Table aria-label="custom pagination table">
+              <TableHead>
+                <TableCell className={classes.tableHeading}>Name</TableCell>
+                <TableCell className={classes.tableHeading}>Wallet Address</TableCell>
+              </TableHead>
+              <TableBody>
+                {userLists.map((items, key) => (
+                  <TableRow key={key}>
+                    <TableCell className={classes.tableCell}>
+                        {items.name}
+                    </TableCell>
+                    <TableCell className={classes.tableCell}>
+                    <a href={`https://sepolia.etherscan.io/address/${items.wallet_address}`}>{items.wallet_address}</a>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                    colSpan={3}
+                    count={data && data.message.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    SelectProps={{
+                      inputProps: {
+                        'aria-label': 'rows per page',
+                      },
+                      native: true,
+                    }}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    ActionsComponent={TablePaginationActions}
+                  />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
+        </Container>
+      </>
+    )
+  }
+  
+  export default SuperAdminDashboard
